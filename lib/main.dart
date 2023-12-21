@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -9,13 +10,12 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -44,6 +44,16 @@ class _MyHomePageState extends State<MyHomePage> {
   File? _file;
   XFile? _filetoshare;
   final picker = ImagePicker();
+  bool isPlaying = false;
+  final player = AudioPlayer();
+  @override
+  void initState() {
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    //   await player.setSourceUrl('http://stream-uk1.radioparadise.com/aac-320');
+    // });
+    super.initState();
+  }
+
   Future getImageFromCamera() async {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
@@ -72,6 +82,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    playMusic() async {
+      if (isPlaying) {
+        player.stop();
+        setState(() {
+          isPlaying = false;
+        });
+      } else {
+        await player.play(AssetSource('audio/audio.mp3'));
+        setState(() {
+          isPlaying = true;
+        });
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -115,6 +139,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          Positioned(
+            bottom: 16.0,
+            right: 150.0,
+            child: FloatingActionButton(
+              onPressed: playMusic,
+              child: isPlaying
+                  ? const Icon(Icons.stop_rounded)
+                  : const Icon(Icons.play_arrow_rounded),
             ),
           ),
           Positioned(
